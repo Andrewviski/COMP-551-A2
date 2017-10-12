@@ -43,8 +43,7 @@ class NaiveBayes():
             values = [x2idx.get(a,self.UNK) for a in x]
             P += np.sum(theta_i[values])
         
-        for c in self.labels:
-            P[:,c] += np.log(self.priors[c])
+        P += np.log(self.priors)
         return np.argmax(P,axis=1)
 
 
