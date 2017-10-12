@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def init():
-    f = open('temp.txt', 'r')
+    f = open('url_removed.txt', 'r')
     lines = f.readlines()
     f.close()
     for i in range(0, len(lines) - 1):
