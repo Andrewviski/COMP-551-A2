@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-import csv
+import csv, sys
 from collections import Counter
 
 def init():
-    f = open('temp.txt', 'r')
+    try:
+        f = open(sys.argv[1], 'r')
+    except:
+        print "Please give a valid filename."
+        sys.exit()
     lines = f.readlines()
     f.close()
     l = []

@@ -4,14 +4,13 @@ def init():
     f = open('url_removed.txt', 'r')
     lines = f.readlines()
     f.close()
-    for i in range(0, len(lines) - 1):
-        line = lines[i]
+    for line in lines:
         index = line.find('\xf0\x9f')
-        lines[i] = iter_remove(line, index)
+        line = iter_remove(line, index)
         try:
-            print lines[i].strip('\n')
+            print line.strip('\n')
         except:
-            print '\n'
+            print ''
 
 def iter_remove(line, index):
     if not index == -1:
