@@ -5,12 +5,13 @@ import numpy as np
 
 class NaiveBayes():
     """Multinomial Naive Bayes"""
-    def __init__(self):
+    def __init__(self,smoothing = 1e-2):
         self.theta = [] # [i]: theta for the ith feature
         self.X2idx = [] # mapping of x in ith feature to index in theta
         self.UNK = 0 # for unkown feature value
+        self.smoothing = smoothing # for smoothing MLE
     
-    def fit(self, X, Y, smoothing = 1e-2):
+    def fit(self, X, Y):
         _, m = X.shape # m = # features
         self.labels = set(Y)
         self.priors = np.zeros(len(self.labels)) # [i]: Pr(Y=i)
@@ -26,7 +27,7 @@ class NaiveBayes():
                 values = [x2idx[a] for a in x[Y==y]]
                 theta_i[values,y] += np.count_nonzero(values==values)
             # print("theta_i",theta_i)
-            theta_i = np.log(theta_i+smoothing)-np.log(np.sum(theta_i,axis=0)+smoothing*theta_i.shape[0]) # normalize with smoothing
+            theta_i = np.log(theta_i+self.smoothing)-np.log(np.sum(theta_i,axis=0)+self.smoothing*theta_i.shape[0]) # normalize with smoothing
             self.theta.append(theta_i)
 
         for c in self.labels:
@@ -48,10 +49,11 @@ class NaiveBayes():
 
 
 if __name__ == "__main__":
+    ## dummy test
     X = np.array([[1,0,1],[0,2,1/2],[3,1/3,3],[0,2,4],[1,2,5/2]])
     Y = np.array([0,2,1,0,2])
 
-    nb = NaiveBayes()
-    nb.fit(X,Y, smoothing = 1)
+    nb = NaiveBayes(smoothing = 1)
+    nb.fit(X,Y)
     x = np.array([[0,3,3]])
     yp = nb.predict(x)
