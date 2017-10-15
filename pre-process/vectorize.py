@@ -28,8 +28,8 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
     #         print(s[1])
 
     print X.shape
-    # print label
-    print count_vect.get_feature_names()
+    print label.shape
+    # print count_vect.get_feature_names()
     np.savez("data",[X, label])
     return X, label
 
