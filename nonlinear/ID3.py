@@ -1,10 +1,10 @@
+#!/usr/bin/env python3
 import sys
-from pprint import pprint
+import BasicSelector
 import random
 
 max_depth = 100
 min_size = 10
-
 
 class ID3:
     def __init__(self):
@@ -19,59 +19,7 @@ class ID3:
         outcomes = [v for v in Y]
         return max(set(outcomes), key=outcomes.count)
 
-    def partition(self, feature, val, X, Y):
-        lx, ly, rx, ry = [], [], [], []
-        for i in range(len(X)):
-            if X[i][feature] < val:
-                lx.append(X[i])
-                ly.append(Y[i])
-            else:
-                rx.append(X[i])
-                ry.append(Y[i])
-        return (lx, ly, rx, ry)
 
-    # evaluate a partitioning of the data
-    def evaluate(self, partitionsX, partitionsY, classes):
-        n_rows = sum([len(part) for part in partitionsX])
-        # best -> 0, worst -> 1
-        test_rating = 0.0
-        for i in range(len(partitionsX)):
-            sz = len(partitionsX[i])
-            if sz != 0:
-                score = 0.0
-                for c in classes:
-                    p = [_ for _ in partitionsY[i]].count(c) / sz
-                    score += p * p
-                test_rating += (1.0 - score) * (sz / n_rows)
-        return test_rating
-
-    def get_best_partition_brute_force(self, X, Y):
-        classes = list(set(_ for _ in Y))
-        best = {'score': 9999, 'feature': -1, 'value': -1, 'partitions': None}
-        for row in X:
-            for feature in range(len(row)):
-                (lx, ly, rx, ry) = self.partition(feature, row[feature], X, Y)
-                cur_score = self.evaluate([lx, rx], [ly, ry], classes)
-                if cur_score < best['score']:
-                    best['score'] = cur_score
-                    best['feature'] = feature
-                    best['value'] = float(row[feature])
-                    best['partitions'] = (lx, ly, rx, ry)
-        return best
-
-    def get_best_partition_random(self, X, Y,trials):
-        classes = list(set(_ for _ in Y))
-        best = {'score': 9999, 'feature': -1, 'value': -1, 'partitions': None}
-        for _ in range(trials):
-            row=random.randint(0,len(X)-1)
-            (lx, ly, rx, ry) = self.partition(feature, row[feature], X, Y)
-            cur_score = self.evaluate([lx, rx], [ly, ry], classes)
-            if cur_score < best['score']:
-                best['score'] = cur_score
-                best['feature'] = feature
-                best['value'] = float(row[feature])
-                best['partitions'] = (lx, ly, rx, ry)
-        return best
 
     def fit(self, X, Y, depth):
         nclasses = len(set(_ for _ in Y))
@@ -79,28 +27,34 @@ class ID3:
             self.isLeaf = True
             self.predication = self.pick_majority(Y)
         else:
-            best = self.get_best_partition_random(X, Y,100)
+            best = BasicSelector.get_best_split(X, Y,trials=20)
             (lx, ly, rx, ry) = best['partitions']
             self.partitionFeature = best['feature']
             self.partitionValue = best['value']
-            self.l = ID3()
-            self.l.fit(lx, ly, depth + 1)
-            self.r = ID3()
-            self.r.fit(rx, ry, depth + 1)
+
+            if len(lx)!=0:
+                self.l = ID3()
+                self.l.fit(lx, ly, depth + 1)
+
+            if len(rx) != 0:
+                self.r = ID3()
+                self.r.fit(rx, ry, depth + 1)
 
     def predict(self, X):
         if self.isLeaf:
             return self.predication
-        elif X[self.partitionFeature] <= self.partitionValue:
+        elif X[self.partitionFeature] <= self.partitionValue or self.r==None:
             return self.l.predict(X)
-        elif X[self.partitionFeature] > self.partitionValue:
+        elif X[self.partitionFeature] > self.partitionValue or self.l==None:
             return self.r.predict(X)
 
     def __print_tree(self, depth=0):
         if not self.isLeaf:
             print('%s[X%d < %.3f]' % (depth * ' ', (self.partitionFeature + 1), self.partitionValue))
-            self.l.__print_tree(depth + 1)
-            self.r.__print_tree(depth + 1)
+            if self.l!=None:
+                self.l.__print_tree(depth + 1)
+            if self.r != None:
+                self.r.__print_tree(depth + 1)
         else:
             print('%s[%s]' % (depth * ' ', (self.predication)))
 
@@ -140,7 +94,8 @@ if __name__ == "__main__":
             #print("ID3 predict %s, actual class is %s" % (pred, Y[i]))
             if pred == row[0]:
                 correct += 1
-        print('Accuracy= %f %%' % (correct * 100 / float(total)))
+            total+=1
+        print('Accuracy= %f%%' % (correct * 100 / float(total)))
 
     else:
         print("Usage:\n./ID3 [TrainData].csv [TestData].csv {Max_depth} {Min_size}")
