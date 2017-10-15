@@ -15,7 +15,7 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
     reader = csv.reader(f)
     label = [row[1] for row in reader]
     label = label[1:]
-
+    label = np.array(label).reshape((-1,1))
     count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
     X = count_vect.fit_transform(data)
 
@@ -30,6 +30,7 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
     print X.shape
     # print label
     print count_vect.get_feature_names()
+    np.savez("data",[X, label])
     return X, label
 
 if __name__ == "__main__":
