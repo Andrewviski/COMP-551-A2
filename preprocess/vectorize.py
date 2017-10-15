@@ -32,8 +32,9 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
     # print label.shape
     # print count_vect.get_feature_names()
 
-    # save arrays to .npy files
-    np.savez("data",*[X, label])
+    np.save("X",X.todense())
+    np.save("Y",label)
+
     return X, label
 
 if __name__ == "__main__":
