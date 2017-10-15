@@ -3,7 +3,7 @@ import csv
 import re
 
 def init():
-    f = open('data/train_set_x.csv', 'r')
+    f = open('../data/train_set_x.csv', 'r')
     reader = csv.reader(f)
     lines = [row[1] for row in reader]
     f.close()
