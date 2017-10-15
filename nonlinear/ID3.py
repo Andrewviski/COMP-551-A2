@@ -4,7 +4,7 @@ import BasicSelector
 import random
 
 max_depth = 100
-min_size = 10
+min_size = 3
 
 class ID3:
     def __init__(self):
@@ -27,7 +27,7 @@ class ID3:
             self.isLeaf = True
             self.predication = self.pick_majority(Y)
         else:
-            best = BasicSelector.get_best_split(X, Y,trials=20)
+            best = BasicSelector.get_best_split(X, Y,random=False,trials=20)
             (lx, ly, rx, ry) = best['partitions']
             self.partitionFeature = best['feature']
             self.partitionValue = best['value']
@@ -50,7 +50,7 @@ class ID3:
 
     def __print_tree(self, depth=0):
         if not self.isLeaf:
-            print('%s[X%d < %.3f]' % (depth * ' ', (self.partitionFeature + 1), self.partitionValue))
+            print('%s[X%d < %s]' % (depth * ' ', (self.partitionFeature + 1), self.partitionValue))
             if self.l!=None:
                 self.l.__print_tree(depth + 1)
             if self.r != None:
@@ -71,14 +71,14 @@ if __name__ == "__main__":
             for value in line.split(","):
                 value = value.strip()
                 if value != "":
-                    tempRow.append(float(value))
+                    tempRow.append(value)
             data.append(tempRow)
 
         print("[*] Shuffling data...")
         random.shuffle(data)
         #pprint(data)
 
-        Y = [int(row[0]) for row in data]
+        Y = [row[0] for row in data]
         X = [row[1:] for row in data]
         tree = ID3()
         print("[*] Training tree...")
@@ -89,9 +89,9 @@ if __name__ == "__main__":
         correct = 0
         total=0
         for line in open(sys.argv[2]):
-            row=[float(_) for _ in line.strip().split(",")]
+            row=[_ for _ in line.strip().split(",")]
             pred = tree.predict(row[1:])
-            #print("ID3 predict %s, actual class is %s" % (pred, Y[i]))
+            #print("ID3 predict %s, actual class is %s" % (pred, row[-1]))
             if pred == row[0]:
                 correct += 1
             total+=1
