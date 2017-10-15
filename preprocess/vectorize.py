@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import parameters as p
 
 
-def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
+def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open("punctuation_removed.txt", "r")
     data = f.readlines()
     f.close()
@@ -16,8 +16,15 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
     label = [row[1] for row in reader]
     label = label[1:]
     label = np.array(label).reshape((-1,1))
-    count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
-    X = count_vect.fit_transform(data)
+    
+    
+
+    if tfidf:
+        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        X = tfidf_vect.fit_transform(data)
+    else:
+        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        X = count_vect.fit_transform(data)
 
     # Zipping the data and labels
 
@@ -38,4 +45,4 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb"):
 
 if __name__ == "__main__":
 
-    create_data(p.ngram, p.max_features, p.analyzer)
+    create_data(p.ngram, p.max_features, p.analyzerm, p.tfidf)
