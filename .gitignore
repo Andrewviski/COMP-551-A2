@@ -1,1 +1,3 @@
-preprocess/data.npz
+preprocess/*.npz
+preprocess/*.txt
+preprocess/*.npy
