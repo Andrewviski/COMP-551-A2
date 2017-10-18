@@ -2,9 +2,8 @@ from sklearn.model_selection import cross_val_score, KFold
 from sklearn.utils import shuffle
 from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
 import numpy as np
-
 from linear.NB import NaiveBayes
-
+from linear.logistic_regression import LogisticRegression
 # .... import a bunch of models here...
 
 
@@ -50,5 +49,7 @@ def evaluate(models):
     
 
 if __name__ == "__main__":
-    clf = [NaiveBayes(smoothing = 1)]
+    # clf = [NaiveBayes(smoothing = 1)]
+    # clf = [ID3()]
+    clf = [LogisticRegression()]
     evaluate(clf)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 def init():
-    f = open('punctuation_removed.txt', 'r')
+    f = open('text_set.csv', 'r')
     content = f.read()
     f.close()
     l = []

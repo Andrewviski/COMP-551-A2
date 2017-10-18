@@ -46,4 +46,4 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfid
 
 if __name__ == "__main__":
 
-    create_data(p.ngram, p.max_features, p.analyzerm, p.tfidf)
+    create_data(p.ngram, p.max_features, p.analyzer, p.tfidf)

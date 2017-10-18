@@ -30,7 +30,7 @@ class LogisticRegression():
                         # print X[i]
                         # print self.theta
                         z = X[i].dot(self.theta[k])
-                        predicted = exp(-z)
+                        predicted = 1 + exp(-z)
                         derivative = (one_hot_Y[i][k] - predicted) * X[i][j] 
                         self.theta[k][j] += self.alpha * derivative
 
@@ -43,21 +43,23 @@ class LogisticRegression():
             max_index = 0
             for j in range(self.label_num):
                 z = self.theta[j].dot(X[i])
-                predicted = exp(-z)
+                predicted = 1 + exp(-z)
                 if predicted > maximum:
                     maximum = predicted
                     max_index = j
             result[i] = max_index
         print result
+        return result
+        
 
 
 if __name__ == "__main__":
     ## dummy test
     X = np.array([[1,0,1],[0,2,1/2],[3,1/3,3],[0,2,4],[1,2,5/2],[1,3,4]])
-    Y = np.array([0,2,1,0,2,3])
+    Y = np.array([0,2,1,0,2,2])
 
     lr = LogisticRegression()
     lr.fit(X,Y)
-    x = np.array([[0,3,3]])
+    x = np.array([[0,3,3], [1,0,1],[0,2,1/2]])
     yp = lr.predict(x)
 
