@@ -16,7 +16,7 @@ def init():
     lines = f.readlines()
     f.close()
     exclude = set(string.punctuation)
-    if p.remove_punctuation == True
+    if p.remove_punctuation == True:
         exclude = exclude.union(set(remove))
 
     for line in lines:

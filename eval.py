@@ -4,6 +4,8 @@ from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore
 import numpy as np
 from linear.NB import NaiveBayes
 from linear.logistic_regression import LogisticRegression
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+import csv
 # .... import a bunch of models here...
 
 
@@ -39,17 +41,35 @@ def evaluate(models):
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
-          
+
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-   
+
         print("accuracy mean",np.mean(np.array(acc_avg)))
 
-    
+
+def process_test_set(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
+    f = open('./data/test_set_x.csv', 'r')
+    reader = csv.reader(f)
+    data = [row[1].translate(None, " \n") for row in reader]
+    f.close()
+
+    data = data[1:]
+
+    if tfidf:
+        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        X = tfidf_vect.fit_transform(data)
+    else:
+        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        X = count_vect.fit_transform(data)
+
+    X = X.todense()
+    return X
 
 if __name__ == "__main__":
     # clf = [NaiveBayes(smoothing = 1)]
     # clf = [ID3()]
-    clf = [LogisticRegression()]
-    evaluate(clf)
+    # clf = [LogisticRegression()]
+    # evaluate(clf)
+    process_test_set()
