@@ -22,8 +22,9 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfid
     if tfidf:
         tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
         X = tfidf_vect.fit_transform(data)
-        for x in tfidf_vect.get_feature_names():
-            print x
+        print tfidf_vect.get_feature_names()
+        # for x in tfidf_vect.get_feature_names():
+        #     print x
     else:
         count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
         X = count_vect.fit_transform(data)
@@ -39,7 +40,6 @@ def create_data(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfid
 
     # print X.shape
     # print label.shape
-    # print count_vect.get_feature_names()
 
     np.save("X",X.todense())
     np.save("Y",label)
