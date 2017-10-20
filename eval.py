@@ -2,10 +2,15 @@ from sklearn.model_selection import cross_val_score, KFold
 from sklearn.utils import shuffle
 from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
 import numpy as np
+
 from linear.NB import NaiveBayes
-from linear.logistic_regression import LogisticRegression
+# from linear.logistic_regression import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import csv
+
+from nonlinear.KNN import KNN
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.decomposition import PCA
 # .... import a bunch of models here...
 
 
@@ -23,11 +28,13 @@ def PCA(X, n_component):
 def evaluate(models):
     X = np.load("preprocess/X.npy")
     y = np.load("preprocess/Y.npy").astype(int)
+    pca = PCA(n_components=50)
+    X = pca.fit_transform(X)
     # print(X.shape)
     # print(y.shape)
     X, y = shuffle(X,y.reshape((-1,)))
     acc_scorer = make_scorer(accuracy_score)
-
+    
     kf = KFold(n_splits=10)
     for model in models:
         acc_avg = []
@@ -72,4 +79,6 @@ if __name__ == "__main__":
     # clf = [ID3()]
     # clf = [LogisticRegression()]
     # evaluate(clf)
-    process_test_set()
+    # process_test_set()
+    clf = [KNN(k=5)]
+    evaluate(clf)
