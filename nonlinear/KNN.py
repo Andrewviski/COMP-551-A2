@@ -57,13 +57,13 @@ class KNNFast():
             for j,w in enumerate(s):
                 if w!=0:
                     I[j].append((i,w))
-       
+        
         # I_ = np.zeros((self.X.shape[1],self.X.shape[0]))
         # arg = np.argwhere(self.X!=0).reshape((-1,2))
         # values = self.X[np.where(self.X!=0)]
         # I_[arg[...,1],arg[...,0]] = values
         # print(I_)
-
+        print("Invert index matrix built")
         ## find match
         A = np.zeros((X.shape[0],self.X.shape[0]))
         A_ = np.zeros((X.shape[0],self.X.shape[0]))
@@ -78,7 +78,7 @@ class KNNFast():
                 #     A_[i,s] += rd*s_d
         # print(A)
         # print(A_)
-
+        print("Find Match finish")
         neighb_idx = np.argpartition(A, -self.k)[...,-self.k:]
         
         ## predict
