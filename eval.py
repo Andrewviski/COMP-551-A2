@@ -8,7 +8,7 @@ from linear.NB import NaiveBayes
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import csv
 
-from nonlinear.KNN import KNN
+from nonlinear.KNN import KNN, KNNFast
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.decomposition import PCA
 # .... import a bunch of models here...
@@ -26,10 +26,10 @@ def PCA(X, n_component):
 
 
 def evaluate(models):
-    X = np.load("preprocess/X.npy")
-    y = np.load("preprocess/Y.npy").astype(int)
-    pca = PCA(n_components=50)
-    X = pca.fit_transform(X)
+    X = np.load("Train_X.npy")
+    y = np.load("Train_Y.npy").astype(int)
+    # pca = PCA(n_components=50)
+    # X = pca.fit_transform(X)
     # print(X.shape)
     # print(y.shape)
     X, y = shuffle(X,y.reshape((-1,)))
@@ -48,7 +48,7 @@ def evaluate(models):
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
-
+            print("acc",acc)
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
@@ -63,5 +63,5 @@ if __name__ == "__main__":
     # clf = [LogisticRegression()]
     # evaluate(clf)
     # process_test_set()
-    clf = [KNN(k=5)]
+    clf = [KNNFast(k=5)]
     evaluate(clf)
