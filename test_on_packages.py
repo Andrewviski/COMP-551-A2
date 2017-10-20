@@ -72,15 +72,4 @@ if __name__ == "__main__":
         f.close()
 
     estimator = MultinomialNB()
-    estimator.fit(X,y)
-    yp = estimator.predict(test_data).astype(int)
-
-    f = open('Multinomial.csv', 'wt')
-    try:
-        writer = csv.writer(f)
-        writer.writerow(('Id', 'Category'))
-        for i in range(len(yp)):
-            writer.writerow((i, yp[i]))
-    finally:
-        f.close()
 
