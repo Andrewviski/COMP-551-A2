@@ -1,3 +1,7 @@
+.idea/workspace.xml
 preprocess/*.npz
 preprocess/*.txt
 preprocess/*.npy
+preprocess/*.pyc
+*.pyc
+*.npy

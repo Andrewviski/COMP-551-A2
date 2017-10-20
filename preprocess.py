@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import string
 import csv
 import re
 import preprocess.parameters as p
@@ -7,12 +8,16 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 def init():
-    f = open('../data/train_set_x.csv', 'r')
+    f = open('./data/train_set_x.csv', 'r')
     reader = csv.reader(f)
     lines = [row[1] for row in reader]
     lines = lines[1:]
     f.close()
     return lines
+
+
+def lower_case(lines):
+    return [line.lower() for line in lines]
 
 
 def remove_url(lines):
@@ -26,7 +31,7 @@ def remove_url(lines):
         for m in matches:
             extracted += line[last_end:m.start()]
             last_end = m.end()
-        extracted += line[last_end:]
+        extracted += line[last_end:] + '\n'
         result.append(extracted)
     return result
 
@@ -35,28 +40,58 @@ def iter_remove(line, index):
     if not index == -1:
         line = line.replace(line[index:index + 4], '')
         index = line.find('\xf0\x9f')
-        iter_remove(line, index)
+        return iter_remove(line, index)
     else:
         return line
 
 
 def remove_emoji(lines):
     result = []
-    for line in lines:
+    for i in range(len(lines)):
+        line = lines[i]
         index = line.find('\xf0\x9f')
-        result.append(iter_remove(line, index))
+        line = iter_remove(line, index)
+        result.append(line)
     return result
 
 
 def remove_digits(lines):
     return [''.join([j for j in line if not j.isdigit()]) for line in lines]
 
-
 def remove_spaces(lines):
     return [line.translate(None, " \n") for line in lines]
 
+def remove_punctuation(lines):
+    f = open('./preprocess/remove.txt', 'r')
+    to_remove = f.readlines()
+    f.close()
+    remove = []
+    for line in to_remove:
+        if line:
+            remove.append(line)
 
-def create_data(data, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True):
+    exclude = set(string.punctuation).union(set(remove))
+
+    result = []
+    for line in lines:
+        for symbol in exclude:
+            if symbol in line:
+                line = line.replace(symbol, '')
+        result.append(line)
+    return result
+
+
+def pipeline(l, lines):
+    lines = lower_case(lines)
+    if l[0]: lines = remove_url(lines)
+    if l[1]: lines = remove_emoji(lines)
+    if l[2]: lines = remove_digits(lines)
+    if l[3]: lines = remove_spaces(lines)
+    if l[4]: lines = remove_punctuation(lines)
+    return lines
+
+
+def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open('./data/train_set_y.csv', 'r')
     reader = csv.reader(f)
     label = [row[1] for row in reader]
@@ -64,42 +99,61 @@ def create_data(data, ngram_range=(1, 1), max_features=5000, analyzer="char_wb",
     label = np.array(label).reshape((-1, 1))
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, analyzer=analyzer)
+        tfidf_vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
         X = tfidf_vect.fit_transform(data)
-        for x in tfidf_vect.get_feature_names():
-            print x
+        print X.shape
+
     else:
-        count_vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, analyzer=analyzer)
+        count_vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
         X = count_vect.fit_transform(data)
 
+    np.save("Train_X",X.todense())
+    np.save("Train_Y",label)
 
-def pipeline(l, lines):
-    if l[0]: lines = remove_url(lines)
-    if l[1]: lines = remove_emoji(lines)
-    if l[2]: lines = remove_digits(lines)
-    if l[3]: lines = remove_spaces(lines)
-    return lines
 
-def process_test_set(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
+def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
-    data = [row[1].translate(None, " \n") for row in reader]
+    data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
     f.close()
 
     data = data[1:]
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
         X = tfidf_vect.fit_transform(data)
+        print X.shape
     else:
-        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
+        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
         X = count_vect.fit_transform(data)
 
-    X = X.todense()
-    return X
+    np.save("Test_X", X.todense())
+
+
+def check_characters(l):
+    for s in l:
+        print s
 
 
 if __name__ == "__main__":
     lines = init()
-    pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces], lines)
-    create_data()
+    lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
+    vocab = [x.encode("utf-8") for x in p.vocab]
+    print vocab
+    l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
+
+
+    # set oprations
+    #
+    # inter = list(set(l1).intersection(set(l2)))
+    # diff1 = list(set(l1) - set(l2))
+    # diff2 = list(set(l2) - set(l1))
+
+    # print "Intersection: "
+    # print inter
+    # print "Diff1:        "
+    # check_characters(diff1)
+    # print "Diff2:        "
+    # print(diff2)
+    # check_characters(diff2)
