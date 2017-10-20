@@ -11,6 +11,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import model_selection
 from sklearn.metrics import precision_score
+from sklearn.naive_bayes import MultinomialNB
 
 
 def PCA(X, n_component):
@@ -44,37 +45,21 @@ if __name__ == "__main__":
     ## Logistic Regression Sklearn
     # predicted_log_reg = model_selection.cross_val_predict(LogisticRegression(solver='sag',multi_class='multinomial'), X, y, cv=10) # this is really slow
     # print("Logistic Regression:     " + str(precision_score(y, predicted_log_reg, average='weighted')))
-
     # estimator = LogisticRegression(solver='sag',multi_class='multinomial')
     # estimator.fit(X,y)
     # yp = estimator.predict(test_data).astype(int)
-    #
-    # f = open('logistic_regression.csv', 'wt')
-    # try:
-    #     writer = csv.writer(f)
-    #     writer.writerow(('Id', 'Category'))
-    #     for i in range(len(yp)):
-    #         writer.writerow((i, yp[i]))
-    # finally:
-    #     f.close()
-    #
-    # ## Random Forest Sklearn
+    # np.savetxt('logistic_regression.csv', yp, delimiter=",")
+
+    ## Random Forest Sklearn
     # forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
     # forest.fit(X,y)
     # yp = forest.predict(test_data).astype(int)
-    # f = open('random_forest.csv', 'wt')
-    # try:
-    #     writer = csv.writer(f)
-    #     writer.writerow(('Id', 'Category'))
-    #     for i in range(len(yp)):
-    #         writer.writerow((i, yp[i]))
-    # finally:
-    #     f.close()
-    #
-    estimator = MultinomialNB()
-    estimator.fit(X,y)
-    yp = estimator.predict(test_data).astype(int)
+    # np.savetxt('random_forest.csv', yp, delimiter=",")
 
+    clf = MultinomialNB(alpha=1)
+    clf.fit(X,y)
+    yp = clf.predict(test_data).astype(int)
+   
     f = open('Multinomial.csv', 'wt')
     try:
         writer = csv.writer(f)
