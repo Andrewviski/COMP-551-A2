@@ -56,23 +56,6 @@ def evaluate(models):
         print("accuracy mean",np.mean(np.array(acc_avg)))
 
 
-def process_test_set(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
-    f = open('./data/test_set_x.csv', 'r')
-    reader = csv.reader(f)
-    data = [row[1].translate(None, " \n") for row in reader]
-    f.close()
-
-    data = data[1:]
-
-    if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
-        X = tfidf_vect.fit_transform(data)
-    else:
-        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, analyzer=analyzer)
-        X = count_vect.fit_transform(data)
-
-    X = X.todense()
-    return X
 
 if __name__ == "__main__":
     # clf = [NaiveBayes(smoothing = 1)]
