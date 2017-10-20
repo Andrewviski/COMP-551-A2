@@ -93,7 +93,7 @@ def pipeline(l, lines):
     return lines
 
 
-def create_data(data, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True):
+def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open('./data/train_set_y.csv', 'r')
     reader = csv.reader(f)
     label = [row[1] for row in reader]
@@ -101,19 +101,20 @@ def create_data(data, ngram_range=(1, 1), max_features=5000, analyzer="char_wb",
     label = np.array(label).reshape((-1, 1))
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = p.vocab, analyzer=analyzer)
+        tfidf_vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
         X = tfidf_vect.fit_transform(data)
-        print X.shape
+        # print X.shape
 
     else:
-        count_vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = p.vocab, analyzer=analyzer)
+        count_vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
         X = count_vect.fit_transform(data)
 
     np.save("Train_X",X.todense())
     np.save("Train_Y",label)
 
+    return tfidf_vect.get_feature_names()
 
-def process_test_set(ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
+def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
     data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
@@ -122,14 +123,16 @@ def process_test_set(ngram_range = (1,1), max_features=5000, analyzer="char_wb",
     data = data[1:]
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = p.vocab, analyzer=analyzer)
+        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
         X = tfidf_vect.fit_transform(data)
         print X.shape
     else:
-        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = p.vocab, analyzer=analyzer)
+        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
         X = count_vect.fit_transform(data)
 
     np.save("Test_X", X.todense())
+
+    return tfidf_vect.get_feature_names()
 
 
 def check_characters(l):
@@ -137,19 +140,13 @@ def check_characters(l):
         print s
 
 
-if __name__ == "__main__":
-    lines = init()
-    lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
-    l1 = create_data(lines, p.ngram, p.max_features, p.analyzer, p.tfidf)
-    l2 = process_test_set(p.ngram, p.max_features, p.analyzer, p.tfidf)
-
-
-    # set oprations
-    #
-    # inter = list(set(l1).intersection(set(l2)))
-    # diff1 = list(set(l1) - set(l2))
-    # diff2 = list(set(l2) - set(l1))
-
+def generate_vocab(lines):
+    l1 = create_data(lines, None, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    l2 = process_test_set(None, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    uni = list(set(l1).union(set(l2)))
+    inter = list(set(l1).intersection(set(l2)))
+    diff1 = list(set(l1) - set(l2))
+    diff2 = list(set(l2) - set(l1))
     # print "Intersection: "
     # print inter
     # print "Diff1:        "
@@ -157,3 +154,15 @@ if __name__ == "__main__":
     # print "Diff2:        "
     # print(diff2)
     # check_characters(diff2)
+    return uni, inter, diff1, diff2
+
+def generate_data_given_vocab(lines, vocab):
+    l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    return l1, l2
+
+if __name__ == "__main__":
+    lines = init()
+    lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
+    generate_data_given_vocab(lines, p.vocab_uni)
+
