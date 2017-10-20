@@ -36,7 +36,6 @@ if __name__ == "__main__":
     # print (float)(np.count_nonzero(X))/(X.shape[0] * X.shape[1])
 
     test_data = np.load("Test_X.npy")
-    print test_data[:10]
     # print (float)(np.count_nonzero(test_data)) / (test_data.shape[0] * test_data.shape[1])
 
 
