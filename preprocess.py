@@ -114,6 +114,7 @@ def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="ch
 
     return tfidf_vect.get_feature_names()
 
+
 def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
@@ -156,10 +157,12 @@ def generate_vocab(lines):
     # check_characters(diff2)
     return uni, inter, diff1, diff2
 
+
 def generate_data_given_vocab(lines, vocab):
     l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
     l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
     return l1, l2
+
 
 if __name__ == "__main__":
     lines = init()
