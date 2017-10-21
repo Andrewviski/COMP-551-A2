@@ -7,11 +7,11 @@ from pprint import pprint
 import numpy as np
 import pickle
 import copy
-max_depth = 100
-min_size = 10
+
 fileName = "decisionTree.txt"
 
-
+max_depth =800
+sys.setrecursionlimit(1000)
 def split(X, Y, feature):
     bucketX = {}
     bucketY = {}
@@ -20,16 +20,15 @@ def split(X, Y, feature):
         idx = X[i][feature]
 
         if not idx in bucketX:
-            bucketX[idx] =[]
+            bucketX[idx] = []
 
         if not idx in bucketY:
-            bucketY[idx] =[]
+            bucketY[idx] = []
 
         bucketX[idx].append(X[i])
         bucketY[idx].append(Y[i])
 
-    return (np.array(bucketX.values()),np.array(bucketY.values()))
-
+    return (np.array(bucketX.values()), np.array(bucketY.values()))
 
 
 def entropy(Y):
@@ -51,7 +50,7 @@ def entropy(Y):
 
 
 def information_gain(feature, X, Y):
-    (Xs,Ys) = split(X, Y, feature)
+    (Xs, Ys) = split(X, Y, feature)
     sz = len(X)
     score = 0
     for i in range(len(Xs)):
@@ -59,26 +58,27 @@ def information_gain(feature, X, Y):
     return entropy(Y) - score
 
 
-def get_best_feature(X, Y, done):
+def get_best_feature(X, Y, trials):
     best_gain = -np.inf
     best_feature = -1
-    l = len(X[0])
-    for feature in range(0,l):
-        if not feature in done:
-            gain, f = (information_gain(feature, X, Y), feature)
-            if gain > best_gain:
-                best_gain = gain
-                best_feature = f
+    for _ in range(trials):
+        feature = random.randint(0, len(X[0])-1)
+        gain, f = (information_gain(feature, X, Y), feature)
+        if gain > best_gain:
+            best_gain = gain
+            best_feature = f
     return best_feature
 
 
 def adjust(X, precision):
     return (np.multiply([10 ^ precision], X)).astype(int)
 
+
 def pick_majority(classes):
     return max(set(classes), key=classes.count)
 
-class ID3():
+
+class randomized_tree():
     def __init__(self):
         self.children = []
 
@@ -88,23 +88,21 @@ class ID3():
         self.Predication = -1
 
     def fit(self, X, Y):
-        self.__fit(np.array(X), np.array(Y), 0, [])
-        pickle.dump(self.children, open(fileName, "w"))
+        self.__fit(np.array(X), np.array(Y),0)
+        #pickle.dump(self.children, open(fileName, "w"))
 
-    def __fit(self, X, Y, depth, done):
-        classes=[_ for _ in Y]
-        if len(set(classes)) < 2 or depth > max_depth or len(X) <= min_size or len(done) >= len(X[0]):
+    def __fit(self, X, Y,depth):
+        classes = [_ for _ in Y]
+        if len(set(classes)) < 2 or depth == max_depth:
             self.isLeaf = True
             self.predication = pick_majority(classes)
         else:
-            best = get_best_feature(X, Y, done)
-            (Xs,Ys) = split(X, Y, best)
+            best = get_best_feature(X, Y,int(math.sqrt(len(X[0]))))
+            (Xs, Ys) = split(X, Y, best)
             print("splitting on the %dth feature" % best)
             for i in range(len(Xs)):
-                t = ID3()
-                temp=copy.copy(done)
-                temp.append(best)
-                t.__fit(Xs[i], Ys[i], depth + 1, temp)
+                t = randomized_tree()
+                t.__fit(Xs[i], Ys[i],depth+1)
                 t.partitionFeature = best
                 t.partitionValue = X[i][best]
                 self.children.append(t)

@@ -4,6 +4,8 @@ from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore
 import numpy as np
 
 from linear.NB import NaiveBayes
+from nonlinear.ID3 import ID3
+from nonlinear.random_forest import random_forest
 # from linear.logistic_regression import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import csv
@@ -26,8 +28,8 @@ def PCA(X, n_component):
 
 
 def evaluate(models):
-    X = np.load("Train_X.npy")
-    y = np.load("Train_Y.npy").astype(int)
+    X = np.load("./preprocess/X.npy")
+    y = np.load("./preprocess/Y.npy").astype(int)
     # pca = PCA(n_components=50)
     # X = pca.fit_transform(X)
     # print(X.shape)
@@ -59,9 +61,9 @@ def evaluate(models):
 
 if __name__ == "__main__":
     # clf = [NaiveBayes(smoothing = 1)]
-    # clf = [ID3()]
+    clf = [random_forest(600)]
     # clf = [LogisticRegression()]
     # evaluate(clf)
     # process_test_set()
-    clf = [KNNFast(k=5)]
+    #clf = [KNNFast(k=5)]
     evaluate(clf)
