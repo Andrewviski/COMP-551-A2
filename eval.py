@@ -54,8 +54,10 @@ def evaluate(models):
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
+            break
 
         print("accuracy mean",np.mean(np.array(acc_avg)))
+
 
 
 
