@@ -93,7 +93,8 @@ def pipeline(l, lines):
     return lines
 
 
-def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True):
+
+def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True, save=False):
     f = open('./data/train_set_y.csv', 'r')
     reader = csv.reader(f)
     label = [row[1] for row in reader]
@@ -101,21 +102,22 @@ def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="ch
     label = np.array(label).reshape((-1, 1))
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
-        X = tfidf_vect.fit_transform(data)
+        vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
+        X = vect.fit_transform(data)
         # print X.shape
 
     else:
-        count_vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
-        X = count_vect.fit_transform(data)
+        vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
+        X = vect.fit_transform(data)
+    
+    if save:
+        np.save("Train_X",X.todense())
+        np.save("Train_Y",label)
 
-    np.save("Train_X",X.todense())
-    np.save("Train_Y",label)
-
-    return tfidf_vect.get_feature_names()
+    return vect.get_feature_names()
 
 
-def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=True):
+def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=False, save = False):
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
     data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
@@ -124,16 +126,16 @@ def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="ch
     data = data[1:]
 
     if tfidf:
-        tfidf_vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
-        X = tfidf_vect.fit_transform(data)
+        vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
+        X = vect.fit_transform(data)
         print X.shape
     else:
-        count_vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
-        X = count_vect.fit_transform(data)
+        vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
+        X = vect.fit_transform(data)
+    if save:
+        np.save("Test_X", X.todense())
 
-    np.save("Test_X", X.todense())
-
-    return tfidf_vect.get_feature_names()
+    return vect.get_feature_names()
 
 
 def check_characters(l):
@@ -159,13 +161,36 @@ def generate_vocab(lines):
 
 
 def generate_data_given_vocab(lines, vocab):
-    l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
-    l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf)
+    l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf, save=True)
+    l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf,save=True)
     return l1, l2
 
 
-if __name__ == "__main__":
-    lines = init()
-    lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
-    generate_data_given_vocab(lines, p.vocab_uni)
+def do_nothing():
+    ## do no preprocessing. Use *original* .csv file downloaded from Kaggle
+    with open('../train_set_x.csv', 'r') as f:
+        reader = csv.reader(f)
+        train_lines = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+        train_lines = train_lines[1:]
 
+    with open('../test_set_x.csv', 'r') as f:
+        reader = csv.reader(f)
+        data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+        test_lines = data[1:]
+    
+    lines = train_lines + test_lines
+    lines = lower_case(lines)
+
+    vect = TfidfVectorizer(ngram_range = (1,1), analyzer="char_wb")
+    X = vect.fit_transform(lines)
+    print("X.shape",X.shape,"len(rain_lines)",len(train_lines),"len(test_lines)",len(test_lines))
+    np.save("Train_X", X[:len(train_lines)].todense())
+    np.save("Test_X", X[-len(test_lines):].todense())
+
+if __name__ == "__main__":
+    # lines = init()
+    # vocab,_,_,_ = generate_vocab(lines)
+    # lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
+    # generate_data_given_vocab(lines, vocab)
+
+    do_nothing()
