@@ -3,6 +3,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
 import numpy as np
 
+
 from linear.NB import *
 from nonlinear.ID3 import ID3
 from nonlinear.random_forest import random_forest
@@ -36,8 +37,8 @@ def init():
 def evaluate(models):
     X,y = init()
     test_data = np.load("Test_X.npy")
-    pca = PCA(n_components=15)
-    X = pca.fit_transform(X)
+    #pca = PCA(n_components=15)
+    #X = pca.fit_transform(X)
    
     acc_scorer = make_scorer(accuracy_score)
     yps = []
@@ -77,9 +78,19 @@ def evaluate(models):
 if __name__ == "__main__":
     # from sklearn.linear_model import LogisticRegression as LR
     # clf = [NaiveBayes2(smoothing=1), MultinomialNB(alpha=1), LR()]
-    # clf = [random_forest(600)]
+    # clf = [ID3()]
     # clf = [LogisticRegression()]
     # evaluate(clf)
     # process_test_set()
-    clf = [KNN_KDTrees(k=5)]
-    evaluate(clf)
+    #clf = [ID3()]
+    # evaluate(clf)
+    test_data = np.load("Test_X.npy")
+    X,y = init()
+    estimator = ID3()
+    estimator.fit(X,y)
+    yp=estimator.predict(test_data)
+    with open('ID3.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(('Id', 'Category'))
+        for i in range(len(yp)):
+            writer.writerow((i, yp[i]))
