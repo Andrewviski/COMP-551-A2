@@ -6,6 +6,7 @@ import csv
 
 # .... import a bunch of models here...
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.multioutput import MultiOutputClassifier
@@ -16,15 +17,9 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.tree import DecisionTreeClassifier
 import xgboost as xgb
 
-def PCA(X, n_component):
-    C = np.cov(X.T)
-    eig_val_cov, eig_vec_cov = np.linalg.eig(C)
-    eig_pairs = [(np.abs(eig_val_cov[i]), eig_vec_cov[:,i]) for i in range(len(eig_val_cov))]
-    eig_pairs.sort(key=lambda x: x[0], reverse=True)
-    eig_vec = [p[1] for p in eig_pairs] ## sorted eigen_vec
-    V = np.stack(eig_vec,axis=1)
-    w = X.dot(V[:n_component].T)
-    return w
+def pca(X, n_component):
+    p = PCA(n_components=n_component,svd_solver= 'arpack')
+    return p.fit_transform(X)
 
 
 def init():
@@ -39,7 +34,8 @@ def init():
 if __name__ == "__main__":
     X,y = init()
     test_data = np.load("Test_X.npy")
-
+    print("Train X.shape ",X.shape,"Test X.shape ",test_data.shape)
+    X = pca(X,50)
     # print (float)(np.count_nonzero(test_data)) / (test_data.shape[0] * test_data.shape[1])
 
     ## Logistic Regression Sklearn
@@ -52,9 +48,9 @@ if __name__ == "__main__":
     # np.savetxt('logistic_regression.csv', yp, delimiter=",")
 
     ## Random Forest Sklearn
-    # forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
-    # forest.fit(X[:-10000],y[:-10000])
-    # print("Random forest score",forest.score(X[-10000:],y[-10000:]))
+    forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
+    forest.fit(X[:-10000],y[:-10000])
+    print("Random forest score",forest.score(X[-10000:],y[-10000:]))
     # yp = forest.predict(test_data).astype(int)
 
     ## Decision Tree Sklearn
@@ -64,9 +60,9 @@ if __name__ == "__main__":
 
 
     ## Naive Bayes Sklearn
-    clf = MultinomialNB(alpha=1)
-    clf.fit(X[:-10000],y[:-10000])
-    print("MultinomialNB score",clf.score(X[-10000:],y[-10000:]))
+    # clf = MultinomialNB(alpha=1)
+    # clf.fit(X[:-10000],y[:-10000])
+    # print("MultinomialNB score",clf.score(X[-10000:],y[-10000:]))
     exit(0)
     # yp = clf.predict(test_data).astype(int)
     
