@@ -3,7 +3,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
 import numpy as np
 
-from linear.NB import NaiveBayes
+from linear.NB import *
 from nonlinear.ID3 import ID3
 from nonlinear.random_forest import random_forest
 from linear.logistic_regression import LogisticRegression
@@ -15,6 +15,11 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.decomposition import PCA
 # .... import a bunch of models here...
 
+def init():
+    X = np.load("Train_X.npy")
+    y = np.load("Train_Y.npy").astype(int)
+    X, y = shuffle(X,y.reshape((-1,)))
+    return X, y
 
 def PCA(X, n_component):
     C = np.cov(X.T)
@@ -28,43 +33,50 @@ def PCA(X, n_component):
 
 
 def evaluate(models):
-    X = np.load("./Train_X.npy")
-    y = np.load("./Train_Y.npy").astype(int)
+    X,y = init()
+    test_data = np.load("Test_X.npy")
     # pca = PCA(n_components=50)
     # X = pca.fit_transform(X)
-    # print(X.shape)
-    # print(y.shape)
-    X, y = shuffle(X,y.reshape((-1,)))
+   
     acc_scorer = make_scorer(accuracy_score)
-    
+    yps = []
     kf = KFold(n_splits=10)
     for model in models:
-        acc_avg = []
-        f1_0_avg = []
-        f1_1_avg = []
-        for train_index, test_index in kf.split(X):
-            X_train, X_valid = X[train_index], X[test_index]
-            y_train, y_valid = y[train_index], y[test_index]
-            model.fit(X_train, y_train)
+        # acc_avg = []
+        # f1_0_avg = []
+        # f1_1_avg = []
+        # for train_index, test_index in kf.split(X):
+        #     X_train, X_valid = X[train_index], X[test_index]
+        #     y_train, y_valid = y[train_index], y[test_index]
+        #     model.fit(X_train, y_train)
 
-            yp_valid = model.predict(X_valid)
-            precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
-            acc = accuracy_score(y_valid, yp_valid)
-            print("acc",acc)
-            acc_avg.append(acc)
-            f1_0_avg.append(f1[0])
-            f1_1_avg.append(f1[1])
-            break
+        #     yp_valid = model.predict(X_valid)
+        #     precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
+        #     acc = accuracy_score(y_valid, yp_valid)
+        #     print("acc",acc)
+        #     acc_avg.append(acc)
+        #     f1_0_avg.append(f1[0])
+        #     f1_1_avg.append(f1[1])
+        
+        # print("accuracy mean",np.mean(np.array(acc_avg)))
 
-        print("accuracy mean",np.mean(np.array(acc_avg)))
-
-
+        model.fit(X,y)
+       
+        yp = model.predict(test_data)
+        # with open('MultinomialNB.csv', 'w') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerow(('Id', 'Category'))
+        #     for i in range(len(yp)):
+        #         writer.writerow((i, yp[i]))
+        yps.append(yp)
+   
 
 
 if __name__ == "__main__":
-    # clf = [NaiveBayes(smoothing = 1)]
+    from sklearn.linear_model import LogisticRegression as LR
+    clf = [NaiveBayes2(smoothing=1), MultinomialNB(alpha=1), LR()]
     # clf = [random_forest(600)]
-    clf = [LogisticRegression()]
+    # clf = [LogisticRegression()]
     # evaluate(clf)
     # process_test_set()
     #clf = [KNNFast(k=5)]

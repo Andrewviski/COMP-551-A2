@@ -46,7 +46,7 @@ for i in range(5):
     p = np.array(p)/np.sum(p)
     data_per_lang = []
 
-    length = np.abs(np.random.normal(lens[i][0]/2,lens[i][1]/2,size=n_valid)).astype(int) # length sampled from gaussian
+    length = np.abs(np.random.normal(lens[i][0]/2,lens[i][1],size=n_valid)).astype(int) # length sampled from gaussian
     for l in length:
         ## sample a line of character     
         idx = np.random.choice(len(p), l,replace = True, p=p).astype(int)
@@ -55,7 +55,7 @@ for i in range(5):
     validation.extend(data_per_lang)
 
 ## save into data/
-with  open('../valid_set_x_y.csv', 'wt') as f:
+with open('../valid_set_x_y.csv', 'wt') as f:
     writer = csv.writer(f)
     writer.writerow(('Id', 'Category'))
     for i in range(len(validation)):

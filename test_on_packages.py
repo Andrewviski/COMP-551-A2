@@ -27,6 +27,7 @@ def init():
     y = np.load("Train_Y.npy").astype(int)
     # print(X.shape)
     # print(y.shape)
+   
     X, y = shuffle(X,y.reshape((-1,)))
     return X, y
 
@@ -45,11 +46,11 @@ if __name__ == "__main__":
     ## Logistic Regression Sklearn
     # predicted_log_reg = model_selection.cross_val_predict(LogisticRegression(solver='sag',multi_class='multinomial'), X, y, cv=10) # this is really slow
     # print("Logistic Regression:     " + str(precision_score(y, predicted_log_reg, average='weighted')))
-    # estimator = LogisticRegression(solver='sag',multi_class='multinomial')
-    # estimator.fit(X[:-10000],y[:-10000])
-    # print("Logistic regression score",estimator.score(X[-10000:],y[-10000:]))
-    # yp = estimator.predict(test_data).astype(int)
-    # np.savetxt('logistic_regression.csv', yp, delimiter=",")
+    estimator = LogisticRegression(solver='sag',multi_class='multinomial')
+    estimator.fit(X,y)
+    print("Logistic regression score",estimator.score(X,y))
+    yp = estimator.predict(test_data)
+    # # np.savetxt('logistic_regression.csv', yp, delimiter=",")
 
     ## Random Forest Sklearn
     # forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
@@ -64,10 +65,11 @@ if __name__ == "__main__":
 
 
     ## Naive Bayes Sklearn
-    clf = MultinomialNB(alpha=1)
-    clf.fit(X,y)
-    print("MultinomialNB score",clf.score(X_val, y_val))
-    yp = clf.predict(test_data).astype(int)
+    # clf = MultinomialNB(alpha=1)
+    # clf.fit(X,y)
+    # print(clf.feature_count_)
+    # print("MultinomialNB score",clf.score(X_val, y_val))
+    # yp = clf.predict(test_data).astype(int)
     
 
     ## XGboost
@@ -83,7 +85,7 @@ if __name__ == "__main__":
     # dtest = xgb.DMatrix(test_data)
     # yp = bst.predict(dtest)
 
-    f = open('MultinomialNB.csv', 'wt')
+    f = open('Logistic Regression.csv', 'wt')
     try:
         writer = csv.writer(f)
         writer.writerow(('Id', 'Category'))
