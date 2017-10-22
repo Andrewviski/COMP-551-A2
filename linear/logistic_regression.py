@@ -5,15 +5,16 @@ import sys
 
 class LogisticRegression():
 
-    def __init__(self, alpha = 0.01, l2 = 0.1, tol=0.0000001):
+    def __init__(self, alpha = 0.05, l2 = 0.1, epoch = 300):
         self.alpha = alpha
         self.l2 = l2
-        self.tol = tol
+        self.epoch = epoch
 
     def convert_one_hot(self, Y):
         one_hot_Y = np.zeros((len(Y), self.label_num)).astype(int)
         one_hot_Y[np.arange(len(Y)), Y] = 1
         return one_hot_Y
+
 
     def softmax(self, z):
         assert len(z.shape) == 2
@@ -38,17 +39,18 @@ class LogisticRegression():
         self.theta = np.random.rand(m, k)
         self.bias = np.zeros(k)
         improve = sys.maxint
-        while norm(improve) > self.tol:
+        for i in range(self.epoch):
 
             p_y_given_x = self.softmax(np.dot(X, self.theta) + np.array([self.bias,] * n))
 
             distance = one_hot_Y - p_y_given_x
-            # print (np.arange(one_hot_Y.shape[0]), one_hot_Y)
-            first = p_y_given_x[np.arange(one_hot_Y.shape[0]), Y]
-            print first
-            cost = -np.mean(np.log(first))
-            print cost
+            # # print (np.arange(one_hot_Y.shape[0]), one_hot_Y)
+            # first = p_y_given_x[np.arange(one_hot_Y.shape[0]), Y]
+            # print first
+            # cost = -np.mean(np.log(first))
+            # print cost
             improve = self.alpha * np.dot(X.T, distance) - self.alpha * self.l2 * self.theta
+            print norm(improve)
             self.theta += improve
             self.bias += self.alpha * np.mean(distance, axis=0)
 
