@@ -177,14 +177,26 @@ def do_nothing():
         reader = csv.reader(f)
         data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
         test_lines = data[1:]
+
+    with open('../valid_set_x_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+        valid_lines = data[1:]
+    with open('../valid_set_x_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        valid_row = [row for row in reader][1:]
+        valid_label = [row[2] for row in valid_row]
+        valid_label = np.array(valid_label).astype(int)
     
-    lines = train_lines + test_lines
+    lines = train_lines + valid_lines + test_lines
     lines = lower_case(lines)
 
     vect = TfidfVectorizer(ngram_range = (1,1), analyzer="char_wb")
     X = vect.fit_transform(lines)
-    print("X.shape",X.shape,"len(rain_lines)",len(train_lines),"len(test_lines)",len(test_lines))
+    print("X.shape",X.shape,"len(rain_lines)",len(train_lines),"len(valid_lines)",len(valid_lines),"len(test_lines)",len(test_lines))
     np.save("Train_X", X[:len(train_lines)].todense())
+    np.save("Val_X",X[len(train_lines):-len(test_lines)].todense())
+    np.save("Val_Y",valid_label)
     np.save("Test_X", X[-len(test_lines):].todense())
 
 if __name__ == "__main__":

@@ -34,8 +34,12 @@ def init():
 if __name__ == "__main__":
     X,y = init()
     test_data = np.load("Test_X.npy")
-    print("Train X.shape ",X.shape,"Test X.shape ",test_data.shape)
-    X = pca(X,50)
+    X_val = np.load("Val_X.npy")
+    y_val = np.load("Val_Y.npy")
+
+    print("Train X.shape ",X.shape,"valid X.shape",X_val.shape,"Test X.shape ",test_data.shape)
+
+    # X = pca(X,50)
     # print (float)(np.count_nonzero(test_data)) / (test_data.shape[0] * test_data.shape[1])
 
     ## Logistic Regression Sklearn
@@ -48,21 +52,21 @@ if __name__ == "__main__":
     # np.savetxt('logistic_regression.csv', yp, delimiter=",")
 
     ## Random Forest Sklearn
-    forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
-    forest.fit(X[:-10000],y[:-10000])
-    print("Random forest score",forest.score(X[-10000:],y[-10000:]))
+    # forest = RandomForestClassifier(n_estimators=100, random_state=1,criterion = "entropy")
+    # forest.fit(X,y)
+    # print("Random forest score",forest.score(X_val,y_val))
     # yp = forest.predict(test_data).astype(int)
 
     ## Decision Tree Sklearn
-    # clf = DecisionTreeClassifier()
-    # clf.fit(X[:-10000],y[:-10000])
-    # print("Decision Tree score",clf.score(X[-10000:],y[-10000:]))
+    clf = DecisionTreeClassifier()
+    clf.fit(X,y)
+    print("Decision Tree score",clf.score(X_val,y_val))
 
 
     ## Naive Bayes Sklearn
     # clf = MultinomialNB(alpha=1)
-    # clf.fit(X[:-10000],y[:-10000])
-    # print("MultinomialNB score",clf.score(X[-10000:],y[-10000:]))
+    # clf.fit(X,y)
+    # print("MultinomialNB score",clf.score(X_val, y_val))
     exit(0)
     # yp = clf.predict(test_data).astype(int)
     
