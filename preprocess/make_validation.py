@@ -55,7 +55,7 @@ for i in range(5):
     validation.extend(data_per_lang)
 
 ## save into data/
-with  open('../data/valid_set_x_y.csv', 'wt') as f:
+with  open('../valid_set_x_y.csv', 'wt') as f:
     writer = csv.writer(f)
     writer.writerow(('Id', 'Category'))
     for i in range(len(validation)):

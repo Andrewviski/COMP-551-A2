@@ -58,17 +58,16 @@ if __name__ == "__main__":
     # yp = forest.predict(test_data).astype(int)
 
     ## Decision Tree Sklearn
-    clf = DecisionTreeClassifier()
-    clf.fit(X,y)
-    print("Decision Tree score",clf.score(X_val,y_val))
+    # clf = DecisionTreeClassifier()
+    # clf.fit(X,y)
+    # print("Decision Tree score",clf.score(X_val,y_val))
 
 
     ## Naive Bayes Sklearn
-    # clf = MultinomialNB(alpha=1)
-    # clf.fit(X,y)
-    # print("MultinomialNB score",clf.score(X_val, y_val))
-    exit(0)
-    # yp = clf.predict(test_data).astype(int)
+    clf = MultinomialNB(alpha=1)
+    clf.fit(X,y)
+    print("MultinomialNB score",clf.score(X_val, y_val))
+    yp = clf.predict(test_data).astype(int)
     
 
     ## XGboost
