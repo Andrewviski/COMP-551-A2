@@ -12,8 +12,8 @@ class KNN_KDTrees():
     def fit(self, X, Y):
         data=[]
         for i in range(len(X)):
-            temprow=np.append(X[i],Y[i])
-            data.append(tuple(temprow))
+            # temprow=np.append(X[i])
+            data.append(tuple(X[i]))
         self.KDtree=sp.spatial.KDTree(data,leafsize=20)
         pprint(len(self.KDtree.data))
         self.X = X
@@ -22,15 +22,15 @@ class KNN_KDTrees():
     def predict(self, X):
         y = []
         for x in X:
-            print "Querying KD Tree"
+            # print "Querying KD Tree"
             result=self.KDtree.query(x,k=self.k)
             dists=result[0]
-            print "Getting points"
+            # print "Getting points"
             points=[]
             for i in result[1]:
-                points.append((X[i],Y[i]))
-            print "Getting best class"
-            res = max(set(points[1]), key=points[1].count)
-            print "Predicted class %d" %res
+                points.append(self.y[i])
+            # print "Getting best class"
+            res = max(set(points), key=points.count)
+            # print "Predicted class %d" %res
             y.append(res)
         return y
