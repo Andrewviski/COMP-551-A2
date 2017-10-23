@@ -94,7 +94,6 @@ def pipeline(l, lines):
     return lines
 
 
-
 def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True, save=False):
     f = open('./data/train_set_y.csv', 'r')
     reader = csv.reader(f)
@@ -157,12 +156,12 @@ def generate_data_given_vocab(lines, vocab):
 
 def do_nothing():
     ## do no preprocessing. Use *original* .csv file downloaded from Kaggle
-    with open('../train_set_x.csv', 'r') as f:
+    with open('./data/train_set_x.csv', 'r') as f:
         reader = csv.reader(f)
         train_lines = [row[1] for row in reader]
         train_lines = train_lines[1:]
 
-    with open('../test_set_x.csv', 'r') as f:
+    with open('./data/test_set_x.csv', 'r') as f:
         reader = csv.reader(f)
         data = [row[1] for row in reader]
         test_lines = data[1:]
