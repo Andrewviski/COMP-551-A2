@@ -17,7 +17,7 @@ from sklearn.decomposition import PCA
 # .... import a bunch of models here...
 
 def init():
-    X = np.load("Train_X.npy")
+    X = np.load("Manual_train_X.npy")
     y = np.load("Train_Y.npy")
     X, y = shuffle(X,y)
     return X, y
@@ -35,7 +35,7 @@ def init():
 
 def evaluate(models):
     X,y = init()
-    test_data = np.load("Test_X.npy")
+    test_data = np.load("Manual_test_X.npy")
 
     # pca = PCA(n_components=15)
     # X = pca.fit_transform(X)
@@ -62,17 +62,16 @@ def evaluate(models):
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
 
-        
         # print("accuracy mean",np.mean(np.array(acc_avg)))
 
-        # model.fit(X,y)
+        model.fit(X,y.reshape((-1,)))
         
-        # yp = model.predict(test_data)
-        # with open('LogiR.csv', 'w') as f:
-        #     writer = csv.writer(f)
-        #     writer.writerow(('Id', 'Category'))
-        #     for i in range(len(yp)):
-        #         writer.writerow((i, yp[i]))
+        yp = model.predict(test_data)
+        with open('MultinomialNB.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(('Id', 'Category'))
+            for i in range(len(yp)):
+                writer.writerow((i, yp[i]))
         # yps.append(yp)
    
 

@@ -2,6 +2,7 @@
 import csv
 import re
 import string
+from collections import Counter
 
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
@@ -117,25 +118,13 @@ def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="ch
     return vect.get_feature_names()
 
 
-def process_test_set(vocab, ngram_range = (1,1), max_features=5000, analyzer="char_wb", tfidf=False, save = False):
+def process_test_set():
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
-    data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+    data = [row[1].translate(None, " \n") for row in reader]
     f.close()
 
-    data = data[1:]
-
-    if tfidf:
-        vect = TfidfVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
-        X = vect.fit_transform(data)
-        print X.shape
-    else:
-        vect = CountVectorizer(ngram_range = ngram_range, max_features = max_features, vocabulary = vocab, analyzer=analyzer)
-        X = vect.fit_transform(data)
-    if save:
-        np.save("Test_X", X.todense())
-
-    return vect.get_feature_names()
+    return data[1:]
 
 
 def check_characters(l):
@@ -211,10 +200,51 @@ def do_nothing():
     np.save("Val_X",X_valid.todense())
     np.save("Val_Y",valid_y)
 
+def construct_vector(lines, test_lines, existing = False):
+    
+    all_chars = list(set("".join(lines)))
+    print(all_chars)
+    feature_num = len(all_chars) + 1  # UNK
+
+    result = np.zeros((len(lines),feature_num)).astype(int)
+    for i in range(len(lines)):
+        line = lines[i]
+        line = line
+        counter = Counter(line)
+        for (u,v) in counter.items():
+            index = all_chars.index(u)
+            result[i][index] = v
+    print("Manual train X shape",result.shape)
+    np.save("Manual_train_X.npy", result)
+
+
+    result = np.zeros((len(test_lines),feature_num)).astype(int)
+    for i in range(len(test_lines)):
+
+        line = test_lines[i]
+        line = line
+        counter = Counter(line)
+        for (u,v) in counter.items():
+
+            try:
+                index = all_chars.index(u)
+            except:
+                index = feature_num - 1
+            result[i][index] = v
+            # print u, v, index
+    print("Manual test X shape",result.shape)
+    np.save("Manual_test_X.npy", result)
+
+
+
 if __name__ == "__main__":
-    # lines = init()
+    # do_nothing()
+
+    lines = init()
+    lines = lower_case(lines)
+    lines = remove_spaces(lines)
     # vocab,_,_,_ = generate_vocab(lines)
     # lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
     # generate_data_given_vocab(lines, vocab)
-
-    do_nothing()
+    test_data = process_test_set()
+    construct_vector(lines, test_data)

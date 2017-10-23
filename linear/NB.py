@@ -65,7 +65,6 @@ class NaiveBayes2():
         self.counts = np.zeros((m,len(self.labels)))
         for y in self.labels:
             x = X[Y==y].T
-            print(X[Y==y].shape)
             self.counts[:,y] += np.sum(x,axis=1)
         self.counts += self.smoothing
         self.theta = np.log(self.counts) - np.log(np.sum(self.counts, axis=0))
