@@ -168,15 +168,20 @@ def generate_data_given_vocab(lines, vocab):
 
 def do_nothing():
     ## do no preprocessing. Use *original* .csv file downloaded from Kaggle
-    with open('../train_set_x.csv', 'r') as f:
+    with open('.data/train_set_x.csv', 'r') as f:
         reader = csv.reader(f)
         train_lines = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
         train_lines = train_lines[1:]
 
-    with open('../test_set_x.csv', 'r') as f:
+    with open('.data/test_set_x.csv', 'r') as f:
         reader = csv.reader(f)
         data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
         test_lines = data[1:]
+
+    with open('./data/train_set_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        label = [row[1] for row in reader]
+        label = label[1:]
 
     # with open('../valid_set_x_y.csv', 'r') as f:
     #     reader = csv.reader(f)
@@ -197,8 +202,7 @@ def do_nothing():
    
     # print("X.shape",X.shape,"len(rain_lines)",len(train_lines),"len(valid_lines)",len(valid_lines),"len(test_lines)",len(test_lines))
     np.save("Train_X", X[:len(train_lines)].todense())
-    # np.save("Val_X",X[len(train_lines):-len(test_lines)].todense())
-    # np.save("Val_Y",valid_label)
+    np.save("Train_Y", label)
     np.save("Test_X", X[-len(test_lines):].todense())
 
 if __name__ == "__main__":
