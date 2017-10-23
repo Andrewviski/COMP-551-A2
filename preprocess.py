@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import parameters as p
 
-
+#
 def init():
     f = open('./data/train_set_x.csv', 'r')
     reader = csv.reader(f)
@@ -61,8 +61,10 @@ def remove_emoji(lines):
 def remove_digits(lines):
     return [''.join([j for j in line if not j.isdigit()]) for line in lines]
 
+
 def remove_spaces(lines):
-    return [line.translate(None, " ") for line in lines]
+    return [line.translate(None, " \n") for line in lines]
+
 
 def remove_punctuation(lines):
     f = open('./preprocess/remove.txt', 'r')
@@ -94,33 +96,12 @@ def pipeline(l, lines):
     return lines
 
 
-def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="char_wb", tfidf=True, save=False):
-    f = open('./data/train_set_y.csv', 'r')
-    reader = csv.reader(f)
-    label = [row[1] for row in reader]
-    label = label[1:]
-    label = np.array(label).reshape((-1, 1))
-
-    if tfidf:
-        vect = TfidfVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
-        X = vect.fit_transform(data)
-        # print X.shape
-
-    else:
-        vect = CountVectorizer(ngram_range=ngram_range, max_features=max_features, vocabulary = vocab, analyzer=analyzer)
-        X = vect.fit_transform(data)
-    
-    if save:
-        np.save("Train_X",X.todense())
-        np.save("Train_Y",label)
-
-    return vect.get_feature_names()
 
 
 def process_test_set():
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
-    data = [row[1].translate(None, " ") for row in reader]
+    data = [row[1].translate(None, " \n") for row in reader]
     f.close()
 
     return data[1:]
@@ -129,29 +110,6 @@ def process_test_set():
 def check_characters(l):
     for s in l:
         print s
-
-
-def generate_vocab(lines):
-    l1 = create_data(lines, None, p.ngram, p.max_features, p.analyzer, p.tfidf)
-    l2 = process_test_set(None, p.ngram, p.max_features, p.analyzer, p.tfidf)
-    uni = list(set(l1).union(set(l2)))
-    inter = list(set(l1).intersection(set(l2)))
-    diff1 = list(set(l1) - set(l2))
-    diff2 = list(set(l2) - set(l1))
-    # print "Intersection: "
-    # print inter
-    # print "Diff1:        "
-    # check_characters(diff1)
-    # print "Diff2:        "
-    # print(diff2)
-    # check_characters(diff2)
-    return uni, inter, diff1, diff2
-
-
-def generate_data_given_vocab(lines, vocab):
-    l1 = create_data(lines, vocab, p.ngram, p.max_features, p.analyzer, p.tfidf, save=True)
-    l2 = process_test_set(vocab, p.ngram, p.max_features, p.analyzer, p.tfidf,save=True)
-    return l1, l2
 
 
 def do_nothing():
@@ -172,48 +130,36 @@ def do_nothing():
         label = label[1:]
         y_train = np.array(label).reshape((-1, 1)).astype(int)
 
-    with open('../valid_set_x_y.csv', 'r') as f:
-        reader = csv.reader(f)
-        data = [row[1] for row in reader]
-        valid_lines = data[1:]
-    with open('../valid_set_x_y.csv', 'r') as f:
-        reader = csv.reader(f)
-        label = [row for row in reader]
-        label = label[1:]
-        label = [row[2] for row in label]
-        valid_y = np.array(label).reshape((-1, 1)).astype(int)
-
     train_lines = lower_case(train_lines)
     test_lines = lower_case(test_lines)
-    valid_lines = lower_case(valid_lines)
 
     vect = CountVectorizer(ngram_range = (1,1), analyzer="char",encoding='latin-1')
     X_train = vect.fit_transform(train_lines)
     vect2 = CountVectorizer(ngram_range = (1,1), analyzer="char",encoding='latin-1', vocabulary = vect.vocabulary_)
     X_test = vect2.fit_transform(test_lines)
-    X_valid = vect2.fit_transform(valid_lines)
 
     np.save("Train_X", X_train.todense())
     np.save("Test_X", X_test.todense())
     np.save("Train_Y",y_train)
-    np.save("Val_X",X_valid.todense())
-    np.save("Val_Y",valid_y)
 
 def construct_vector(lines, test_lines, existing = False):
     
     all_chars = list(set("".join(lines)))
-    print(all_chars)
-    feature_num = len(all_chars) + 1  # UNK
+    feature_num = len(all_chars) + 2  # UNK
 
     result = np.zeros((len(lines),feature_num)).astype(int)
+    index = None
     for i in range(len(lines)):
+
         line = lines[i]
-        line = line
+
         counter = Counter(line)
         for (u,v) in counter.items():
+            if not line:
+                index = feature_num - 2
             index = all_chars.index(u)
             result[i][index] = v
-    print("Manual train X shape",result.shape)
+    # print("Manual train X shape",result.shape)
     np.save("Manual_train_X.npy", result)
 
 
@@ -221,23 +167,24 @@ def construct_vector(lines, test_lines, existing = False):
     for i in range(len(test_lines)):
 
         line = test_lines[i]
-        line = line
         counter = Counter(line)
         for (u,v) in counter.items():
-
-            try:
-                index = all_chars.index(u)
-            except:
-                index = feature_num - 1
+            if not line:
+                index = feature_num - 2
+            else:
+                try:
+                    index = all_chars.index(u)
+                except:
+                    index = feature_num - 1
             result[i][index] = v
             # print u, v, index
-    print("Manual test X shape",result.shape)
+    # print("Manual test X shape",result.shape)
     np.save("Manual_test_X.npy", result)
 
 
 
 if __name__ == "__main__":
-    # do_nothing()
+    do_nothing()
 
     lines = init()
     lines = lower_case(lines)
