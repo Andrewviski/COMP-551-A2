@@ -6,7 +6,7 @@ from collections import Counter
 
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-
+from sklearn.feature_extraction.text import TfidfTransformer
 import parameters as p
 
 #
@@ -96,8 +96,6 @@ def pipeline(l, lines):
     return lines
 
 
-
-
 def process_test_set():
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
@@ -145,41 +143,44 @@ def do_nothing():
 def construct_vector(lines, test_lines, existing = False):
     
     all_chars = list(set("".join(lines)))
-    feature_num = len(all_chars) + 2  # UNK
+    feature_num = len(all_chars) + 2  # UNK,BLANK
 
-    result = np.zeros((len(lines),feature_num)).astype(int)
-    index = None
+    x_train = np.zeros((len(lines),feature_num)).astype(int)
     for i in range(len(lines)):
 
         line = lines[i]
-
+        if not line:
+            x_train[i][feature_num-2]=1
         counter = Counter(line)
         for (u,v) in counter.items():
-            if not line:
-                index = feature_num - 2
             index = all_chars.index(u)
-            result[i][index] = v
-    # print("Manual train X shape",result.shape)
-    np.save("Manual_train_X.npy", result)
+            x_train[i][index] = v
+    # print("Manual train X shape",x_train.shape)
 
 
-    result = np.zeros((len(test_lines),feature_num)).astype(int)
+    x_test = np.zeros((len(test_lines),feature_num)).astype(int)
     for i in range(len(test_lines)):
 
         line = test_lines[i]
+        if not line:
+            x_test[i][feature_num-2]=1
         counter = Counter(line)
         for (u,v) in counter.items():
-            if not line:
-                index = feature_num - 2
-            else:
-                try:
-                    index = all_chars.index(u)
-                except:
-                    index = feature_num - 1
-            result[i][index] = v
-            # print u, v, index
-    # print("Manual test X shape",result.shape)
-    np.save("Manual_test_X.npy", result)
+
+            try:
+                index = all_chars.index(u)
+            except:
+                index = feature_num - 1
+            x_test[i][index] = v
+    # print("Manual test X shape",x_test.shape)
+
+    # To enable tf-idf, uncomment the following lines:
+
+    # transformer = TfidfTransformer()
+    # x_train = transformer.fit_transform(x_train).toarray()
+    # x_test = transformer.transform(x_test).toarray()
+    np.save("Manual_train_X.npy", x_train)
+    np.save("Manual_test_X.npy", x_test)
 
 
 
@@ -189,8 +190,6 @@ if __name__ == "__main__":
     lines = init()
     lines = lower_case(lines)
     lines = remove_spaces(lines)
-    # vocab,_,_,_ = generate_vocab(lines)
     # lines = pipeline([p.remove_url, p.remove_emoji, p.remove_digits, p.remove_spaces, p.remove_punctuation], lines)
-    # generate_data_given_vocab(lines, vocab)
     test_data = process_test_set()
     construct_vector(lines, test_data)

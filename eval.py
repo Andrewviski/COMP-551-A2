@@ -1,6 +1,6 @@
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
 from linear.NB import *
 import csv
@@ -41,12 +41,10 @@ def evaluate(models):
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
-            print("acc",acc)
+            print(confusion_matrix(y_valid, yp_valid))
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-
-
 
 
 def predict_on_testset(model, X, y, filename):
@@ -65,6 +63,6 @@ if __name__ == "__main__":
     # Import estimators from subfolders "linear" or "nonlinear",
     # construct instances and put them into the "clf" list.
     clf = [NaiveBayes2(smoothing=1)]
-    # To test cross-validation scores, run
-    evaluate(clf)
+    # To test cross-validation scores, run evaluate(clf)
+    # which will print the precision for each fold and     evaluate(clf)
 
