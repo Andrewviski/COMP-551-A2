@@ -46,10 +46,10 @@ if __name__ == "__main__":
     ## Logistic Regression Sklearn
     # predicted_log_reg = model_selection.cross_val_predict(LogisticRegression(solver='sag',multi_class='multinomial'), X, y, cv=10) # this is really slow
     # print("Logistic Regression:     " + str(precision_score(y, predicted_log_reg, average='weighted')))
-    estimator = LogisticRegression(solver='sag',multi_class='multinomial')
-    estimator.fit(X,y)
-    print("Logistic regression score",estimator.score(X,y))
-    yp = estimator.predict(test_data)
+    # estimator = LogisticRegression(solver='sag',multi_class='multinomial')
+    # estimator.fit(X,y)
+    # print("Logistic regression score",estimator.score(X,y))
+    # yp = estimator.predict(test_data)
     # # np.savetxt('logistic_regression.csv', yp, delimiter=",")
 
     ## Random Forest Sklearn
@@ -65,10 +65,9 @@ if __name__ == "__main__":
 
 
     ## Naive Bayes Sklearn
-    # clf = MultinomialNB(alpha=1)
-    # clf.fit(X,y)
-    # print(clf.feature_count_)
-    # print("MultinomialNB score",clf.score(X_val, y_val))
+    clf = MultinomialNB(alpha=1)
+    clf.fit(X,y)
+    print("MultinomialNB score",clf.score(X_val, y_val))
     # yp = clf.predict(test_data).astype(int)
     
 

@@ -18,8 +18,8 @@ from sklearn.decomposition import PCA
 
 def init():
     X = np.load("Train_X.npy")
-    y = np.load("Train_Y.npy").astype(int)
-    X, y = shuffle(X,y.reshape((-1,)))
+    y = np.load("Train_Y.npy")
+    X, y = shuffle(X,y)
     return X, y
 
 # def PCA(X, n_component):
@@ -36,9 +36,12 @@ def init():
 def evaluate(models):
     X,y = init()
     test_data = np.load("Test_X.npy")
-    pca = PCA(n_components=15)
-    X = pca.fit_transform(X)
-   
+
+    # pca = PCA(n_components=15)
+    # X = pca.fit_transform(X)
+    # test_data = pca.fit_transform(test_data)
+    # print(X.shape)
+
     acc_scorer = make_scorer(accuracy_score)
     yps = []
     kf = KFold(n_splits=10)
@@ -49,8 +52,8 @@ def evaluate(models):
         for train_index, test_index in kf.split(X):
             X_train, X_valid = X[train_index], X[test_index]
             y_train, y_valid = y[train_index], y[test_index]
-            model.fit(X_train, y_train)
-
+            # print(X_train.shape, y_train.shape)
+            model.fit(X_train, y_train.reshape((-1,)))
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
@@ -58,28 +61,28 @@ def evaluate(models):
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-            break
+
         
         # print("accuracy mean",np.mean(np.array(acc_avg)))
 
-        model.fit(X,y)
-       
-        yp = model.predict(test_data)
-        # with open('MultinomialNB.csv', 'w') as f:
+        # model.fit(X,y)
+        
+        # yp = model.predict(test_data)
+        # with open('LogiR.csv', 'w') as f:
         #     writer = csv.writer(f)
         #     writer.writerow(('Id', 'Category'))
         #     for i in range(len(yp)):
         #         writer.writerow((i, yp[i]))
-        yps.append(yp)
+        # yps.append(yp)
    
 
-
 if __name__ == "__main__":
-    # from sklearn.linear_model import LogisticRegression as LR
-    # clf = [NaiveBayes2(smoothing=1), MultinomialNB(alpha=1), LR()]
+    from sklearn.linear_model import LogisticRegression as LR
+    from sklearn.tree import DecisionTreeClassifier
+    clf = [NaiveBayes2(smoothing=1)]
     # clf = [random_forest(600)]
-    # clf = [LogisticRegression()]
+    # clf = [DecisionTreeClassifier()]
     # evaluate(clf)
     # process_test_set()
-    clf = [KNN_KDTrees(k=5)]
+    # clf = [KNN_KDTrees(k=5)]
     evaluate(clf)

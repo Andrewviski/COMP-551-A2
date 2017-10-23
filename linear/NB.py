@@ -61,10 +61,11 @@ class NaiveBayes2():
 
     def fit(self,X,Y):
         n,m = X.shape
-        self.labels = set(Y)
+        self.labels = {0,1,2,3,4}
         self.counts = np.zeros((m,len(self.labels)))
         for y in self.labels:
             x = X[Y==y].T
+            print(X[Y==y].shape)
             self.counts[:,y] += np.sum(x,axis=1)
         self.counts += self.smoothing
         self.theta = np.log(self.counts) - np.log(np.sum(self.counts, axis=0))

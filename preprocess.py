@@ -170,36 +170,46 @@ def do_nothing():
     ## do no preprocessing. Use *original* .csv file downloaded from Kaggle
     with open('../train_set_x.csv', 'r') as f:
         reader = csv.reader(f)
-        train_lines = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+        train_lines = [row[1] for row in reader]
         train_lines = train_lines[1:]
 
     with open('../test_set_x.csv', 'r') as f:
         reader = csv.reader(f)
-        data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+        data = [row[1] for row in reader]
         test_lines = data[1:]
 
-    # with open('../valid_set_x_y.csv', 'r') as f:
-    #     reader = csv.reader(f)
-    #     data = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
-    #     valid_lines = data[1:]
-    # with open('../valid_set_x_y.csv', 'r') as f:
-    #     reader = csv.reader(f)
-    #     valid_row = [row for row in reader][1:]
-    #     valid_label = [row[2] for row in valid_row]
-    #     valid_label = np.array(valid_label).astype(int)
+    with open('./data/train_set_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        label = [row[1] for row in reader]
+        label = label[1:]
+        y_train = np.array(label).reshape((-1, 1)).astype(int)
 
-    # lines = train_lines + valid_lines + test_lines
-    lines = train_lines + test_lines
-    lines = lower_case(lines)
+    with open('../valid_set_x_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        data = [row[1] for row in reader]
+        valid_lines = data[1:]
+    with open('../valid_set_x_y.csv', 'r') as f:
+        reader = csv.reader(f)
+        label = [row for row in reader]
+        label = label[1:]
+        label = [row[2] for row in label]
+        valid_y = np.array(label).reshape((-1, 1)).astype(int)
 
-    vect = CountVectorizer(ngram_range = (1,1), analyzer="char_wb")
-    X = vect.fit_transform(lines)
-   
-    # print("X.shape",X.shape,"len(rain_lines)",len(train_lines),"len(valid_lines)",len(valid_lines),"len(test_lines)",len(test_lines))
-    np.save("Train_X", X[:len(train_lines)].todense())
-    # np.save("Val_X",X[len(train_lines):-len(test_lines)].todense())
-    # np.save("Val_Y",valid_label)
-    np.save("Test_X", X[-len(test_lines):].todense())
+    train_lines = lower_case(train_lines)
+    test_lines = lower_case(test_lines)
+    valid_lines = lower_case(valid_lines)
+
+    vect = CountVectorizer(ngram_range = (1,1), analyzer="char",encoding='latin-1')
+    X_train = vect.fit_transform(train_lines)
+    vect2 = CountVectorizer(ngram_range = (1,1), analyzer="char",encoding='latin-1', vocabulary = vect.vocabulary_)
+    X_test = vect2.fit_transform(test_lines)
+    X_valid = vect2.fit_transform(valid_lines)
+
+    np.save("Train_X", X_train.todense())
+    np.save("Test_X", X_test.todense())
+    np.save("Train_Y",y_train)
+    np.save("Val_X",X_valid.todense())
+    np.save("Val_Y",valid_y)
 
 if __name__ == "__main__":
     # lines = init()
