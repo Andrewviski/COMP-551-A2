@@ -56,11 +56,11 @@ def evaluate(models):
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
-            print("acc",acc)
+            print(confusion_matrix(y_valid, yp_valid))
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-        print(f1_0_avg,f1_1_avg)
+        exit(0)
         # print("accuracy mean",np.mean(np.array(acc_avg)))
 
         model.fit(X,y.reshape((-1,)))
