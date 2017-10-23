@@ -62,7 +62,7 @@ def remove_digits(lines):
     return [''.join([j for j in line if not j.isdigit()]) for line in lines]
 
 def remove_spaces(lines):
-    return [line.translate(None, " \n") for line in lines]
+    return [line.translate(None, " ") for line in lines]
 
 def remove_punctuation(lines):
     f = open('./preprocess/remove.txt', 'r')
@@ -120,7 +120,7 @@ def create_data(data, vocab, ngram_range=(1, 1), max_features=5000, analyzer="ch
 def process_test_set():
     f = open('./data/test_set_x.csv', 'r')
     reader = csv.reader(f)
-    data = [row[1].translate(None, " \n") for row in reader]
+    data = [row[1].translate(None, " ") for row in reader]
     f.close()
 
     return data[1:]
