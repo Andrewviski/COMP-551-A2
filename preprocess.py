@@ -6,7 +6,7 @@ from collections import Counter
 
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-
+from sklearn.feature_extraction.text import TfidfTransformer
 import parameters as p
 
 
@@ -203,25 +203,26 @@ def construct_vector(lines, test_lines, existing = False):
     
     all_chars = list(set("".join(lines)))
     print(all_chars)
-    feature_num = len(all_chars) + 1  # UNK
+    feature_num = len(all_chars) + 2  # UNK,BLANK
 
-    result = np.zeros((len(lines),feature_num)).astype(int)
+    x_train = np.zeros((len(lines),feature_num)).astype(int)
     for i in range(len(lines)):
         line = lines[i]
-        line = line
+        if not line:
+            x_train[i][feature_num-2]=1
         counter = Counter(line)
         for (u,v) in counter.items():
             index = all_chars.index(u)
-            result[i][index] = v
-    print("Manual train X shape",result.shape)
-    np.save("Manual_train_X.npy", result)
+            x_train[i][index] = v
+    print("Manual train X shape",x_train.shape)
 
 
-    result = np.zeros((len(test_lines),feature_num)).astype(int)
+    x_test = np.zeros((len(test_lines),feature_num)).astype(int)
     for i in range(len(test_lines)):
 
         line = test_lines[i]
-        line = line
+        if not line:
+            x_test[i][feature_num-2]=1
         counter = Counter(line)
         for (u,v) in counter.items():
 
@@ -229,10 +230,15 @@ def construct_vector(lines, test_lines, existing = False):
                 index = all_chars.index(u)
             except:
                 index = feature_num - 1
-            result[i][index] = v
+            x_test[i][index] = v
             # print u, v, index
-    print("Manual test X shape",result.shape)
-    np.save("Manual_test_X.npy", result)
+    print("Manual test X shape",x_test.shape)
+
+    # transformer = TfidfTransformer()
+    # x_train = transformer.fit_transform(x_train).toarray()
+    # x_test = transformer.transform(x_test).toarray()
+    np.save("Manual_train_X.npy", x_train)
+    np.save("Manual_test_X.npy", x_test)
 
 
 

@@ -1,13 +1,13 @@
 from sklearn.model_selection import cross_val_score, KFold
 from sklearn.utils import shuffle
-from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
+from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support, confusion_matrix
 import numpy as np
 
 
 from linear.NB import *
 # from nonlinear.ID3 import ID3
 # from nonlinear.random_forest import random_forest
-from linear.logistic_regression import LogisticRegression
+
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import csv
 
@@ -60,13 +60,13 @@ def evaluate(models):
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-
+        print(f1_0_avg,f1_1_avg)
         # print("accuracy mean",np.mean(np.array(acc_avg)))
 
         model.fit(X,y.reshape((-1,)))
         
         yp = model.predict(test_data)
-        with open('MultinomialNB.csv', 'w') as f:
+        with open('MultinomialNB_Blank.csv', 'w') as f:
             writer = csv.writer(f)
             writer.writerow(('Id', 'Category'))
             for i in range(len(yp)):

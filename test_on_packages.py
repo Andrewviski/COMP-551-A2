@@ -23,7 +23,7 @@ def pca(X, n_component):
 
 
 def init():
-    X = np.load("Train_X.npy")
+    X = np.load("Manual_train_X.npy")
     y = np.load("Train_Y.npy").astype(int)
     # print(X.shape)
     # print(y.shape)
@@ -34,7 +34,7 @@ def init():
 
 if __name__ == "__main__":
     X,y = init()
-    test_data = np.load("Test_X.npy")
+    test_data = np.load("Manual_test_X.npy")
     X_val = np.load("Val_X.npy")
     y_val = np.load("Val_Y.npy")
 
@@ -46,10 +46,10 @@ if __name__ == "__main__":
     ## Logistic Regression Sklearn
     # predicted_log_reg = model_selection.cross_val_predict(LogisticRegression(solver='sag',multi_class='multinomial'), X, y, cv=10) # this is really slow
     # print("Logistic Regression:     " + str(precision_score(y, predicted_log_reg, average='weighted')))
-    # estimator = LogisticRegression(solver='sag',multi_class='multinomial')
-    # estimator.fit(X,y)
-    # print("Logistic regression score",estimator.score(X,y))
-    # yp = estimator.predict(test_data)
+    estimator = LogisticRegression(solver='sag',multi_class='multinomial')
+    estimator.fit(X,y)
+    print("Logistic regression score",estimator.score(X,y))
+    yp = estimator.predict(test_data)
     # # np.savetxt('logistic_regression.csv', yp, delimiter=",")
 
     ## Random Forest Sklearn
@@ -65,9 +65,9 @@ if __name__ == "__main__":
 
 
     ## Naive Bayes Sklearn
-    clf = MultinomialNB(alpha=1)
-    clf.fit(X,y)
-    print("MultinomialNB score",clf.score(X_val, y_val))
+    # clf = MultinomialNB(alpha=1)
+    # clf.fit(X,y)
+    # print("MultinomialNB score",clf.score(X_val, y_val))
     # yp = clf.predict(test_data).astype(int)
     
 
