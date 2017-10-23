@@ -24,6 +24,5 @@ def label_dist():
 ## character variety per language distribution
 
 
-
 if __name__ == "__main__":
     label_dist()
