@@ -32,5 +32,5 @@ class random_forest():
             for tree in self.trees:
                 trees_results.append(tree.predict_row(x))
             Yp.append(pick_majority(trees_results))
-        print len(Yp)
+        print(len(Yp))
         return Yp
