@@ -10,10 +10,12 @@ import copy
 
 max_depth = 200
 min_size = 10
+min_gain= 0.00001
 fileName = "decisionTree.txt"
 
 
 def split(X, Y, feature):
+
     bucketX = {}
     bucketY = {}
 
@@ -29,7 +31,7 @@ def split(X, Y, feature):
         bucketX[idx].append(X[i])
         bucketY[idx].append(Y[i])
 
-    return (np.array(bucketX.values()), np.array(bucketY.values()))
+    return np.array(bucketX.values()), np.array(bucketY.values())
 
 
 def entropy(data, feature):
@@ -70,7 +72,9 @@ def entropy_vector(v):
         entropy += ((-subset_size / float(total_size)) * np.log2(subset_size / float(total_size)))
     return entropy
 
+
 def information_gain(X, Y, feature):
+
     values = {}
     subset_entropy = 0.0
 
@@ -89,7 +93,7 @@ def information_gain(X, Y, feature):
         Y_subset = values[value][1]
         subset_entropy += prob * entropy_vector(Y_subset)
 
-    return (entropy_vector(Y) - subset_entropy)
+    return entropy_vector(Y) - subset_entropy
 
 
 def get_best_feature(X, Y, done):
@@ -102,7 +106,7 @@ def get_best_feature(X, Y, done):
             if gain > best_gain:
                 best_gain = gain
                 best_feature = feature
-    return best_feature
+    return (best_feature,best_gain)
 
 
 def adjust(X, precision):
@@ -123,6 +127,8 @@ class ID3():
         self.Predication = -1
 
     def fit(self, X, Y):
+        if sys.os.isfile(fileName):
+
         self.__fit(adjust(np.array(X), 2), np.array(Y), 0, [])
         pickle.dump(self.children, open(fileName, "w"))
 
@@ -132,17 +138,22 @@ class ID3():
             self.isLeaf = True
             self.predication = pick_majority(classes)
         else:
-            best = get_best_feature(X, Y, done)
-            (Xs, Ys) = split(X, Y, best)
-            #print("splitting on the %dth feature" % best)
-            for i in range(len(Xs)):
-                t = ID3()
-                temp = copy.copy(done)
-                temp.append(best)
-                t.__fit(Xs[i], Ys[i], depth + 1, temp)
-                t.partitionFeature = best
-                t.partitionValue = X[i][best]
-                self.children.append(t)
+            best,gain = get_best_feature(X, Y, done)
+            print(gain)
+            if gain < min_gain:
+                self.isLeaf = True
+                self.predication = pick_majority(classes)
+            else:
+                (Xs, Ys) = split(X, Y, best)
+                print("splitting on the %dth feature" % best)
+                for i in range(len(Xs)):
+                    t = ID3()
+                    temp = copy.copy(done)
+                    temp.append(best)
+                    t.__fit(Xs[i], Ys[i], depth + 1, temp)
+                    t.partitionFeature = best
+                    t.partitionValue = X[i][best]
+                    self.children.append(t)
 
     def predict(self, X):
         yp = []
@@ -152,19 +163,16 @@ class ID3():
         return yp
 
     def predict_row(self, X):
-        if self.isLeaf == True:
+        if self.isLeaf:
             return self.predication
         else:
-            for child in self.children:
-                if X[child.partitionFeature] == child.partitionValue:
-                    return child.predict_row(X)
             mn = np.inf
-            bestChild = None
+            best_child = None
             for child in self.children:
                 if np.abs(X[child.partitionFeature] - child.partitionValue) < mn:
                     mn = np.abs(X[child.partitionFeature] - child.partitionValue)
-                    bestChild = child
-            return bestChild.predict_row(X)
+                    best_child = child
+            return best_child.predict_row(X)
 
     def __print_tree(self, depth=0):
         if not self.isLeaf:
