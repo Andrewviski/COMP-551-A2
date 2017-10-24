@@ -1,36 +1,72 @@
 from nonlinear.RandomizedTree import randomized_tree
-from nonlinear.ID3 import pick_majority
 import random
 import math
 import numpy as np
 
+
+# hard coded weights based on the unbalance in the training data
+class_weights =[1.2,
+         1,
+         1.1,
+         1,
+         1.2]
+
+# a function to compute the weighted majority class out of a list of classes
+def pick_majority (classes):
+    score = [0, 0, 0, 0, 0]
+    for c in classes:
+        score[c] += class_weights[c]
+    return np.argmax(score)
+
+
+# random forest classifier implementation
 class random_forest():
 
-    def __init__(self,size):
-        self.size=size
-        self.trees=[randomized_tree() for _ in range(size)]
+    def __init__(self, size):
+        self.size = size
+        # hardcoded randomized trees with depth=150 and
+        self.trees = [randomized_tree(150, 4,class_weights) for _ in range(size)]
 
-    def fit(self,X,Y):
-        m=int(math.sqrt(len(X)))
+    # training routine for classifier
+    def fit(self, X, Y):
+
+        #pick m inputs for each tree
+        m = int(math.sqrt(len(X)))
+
+        #split the data based on class
+        class_samples = [[], [], [], [], []]
+        for i in range(len(X)):
+            class_samples[Y[i]].append(X[i])
+
+        # train each tree
         for i in range(self.size):
-            taken=set([])
-            subX=[]
-            subY=[]
-            for _ in range(m):
-                idx=random.randint(0,len(X))
-                while idx in taken:
-                    idx = random.randint(0, len(X))
+            subX = []
+            subY = []
 
-                subX.append(X[idx])
-                subY.append(Y[idx])
-            self.trees[i].fit(subX,subY)
+            # the proportion of each class in the sample
+            proportion = [5, 51, 27, 13, 5]
 
-    def predict(self,X):
+            #sample input points according to into subX,subY
+            for c in range(len(proportion)):
+                l = (m * proportion[c]) / 100
+                for _ in range(l):
+                    idx = random.randint(0, len(class_samples[c]) - 1)
+                    subX.append(class_samples[c][idx])
+                    subY.append(c)
+
+            # train the ith tree
+            self.trees[i].fit(subX, subY)
+
+    # predication routine for random forests
+    def predict(self, X):
         Yp = []
         for x in X:
-            trees_results=[]
+            trees_results = []
+
+            # predict each input against all trees
             for tree in self.trees:
                 trees_results.append(tree.predict_row(x))
+
+            #pick majority
             Yp.append(pick_majority(trees_results))
-        print(len(Yp))
         return Yp
