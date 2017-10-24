@@ -5,7 +5,7 @@ import numpy as np
 
 with open('../data/train_set_x.csv', 'r') as f:
     reader = csv.reader(f)
-    train_lines = [row[1].decode('latin-1').encode("utf-8").translate(None, " \n") for row in reader]
+    train_lines = [row[1] for row in reader]
     train_lines = train_lines[1:]
 with open('../data/train_set_y.csv', 'r') as f:
     reader = csv.reader(f)
@@ -37,6 +37,7 @@ for i in range(5):
     lens.append([np.mean(lens_),np.std(lens_)])
     freq.append(char2freq)
 
+char_set = reduce(lambda a,b:a.union(b), [set(f.keys()) for f in freq])
 
 n_valid = 1000 # #validation data per language
 validation = []
@@ -55,9 +56,9 @@ for i in range(5):
     validation.extend(data_per_lang)
 
 ## save into data/
-with open('../valid_set_x_y.csv', 'wt') as f:
+with open('../../valid_set_x_y.csv', 'wt') as f:
     writer = csv.writer(f)
     writer.writerow(('Id', 'Category'))
     for i in range(len(validation)):
-        writer.writerow((i, validation[i][0],validation[i][1]))
+        writer.writerow((i, validation[i][0].encode("utf-8"),validation[i][1]))
 

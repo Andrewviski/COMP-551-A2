@@ -1,47 +1,34 @@
-from sklearn.model_selection import cross_val_score, KFold
+from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
-from sklearn.metrics import make_scorer, accuracy_score, precision_recall_fscore_support
-import numpy as np
-
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 
 from linear.NB import *
-from nonlinear.ID3 import ID3
-from nonlinear.random_forest import random_forest
-from linear.logistic_regression import LogisticRegression
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import csv
 
-from nonlinear.KNN import KNN, KNNFast
-from nonlinear.KNN_heap import KNN_KDTrees
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.decomposition import PCA
 # .... import a bunch of models here...
 
+
 def init():
-    X = np.load("Train_X.npy")
-    y = np.load("Train_Y.npy").astype(int)
-    X, y = shuffle(X,y.reshape((-1,)))
+    X = np.load("Manual_train_X.npy")
+    y = np.load("Train_Y.npy")
+    X, y = shuffle(X,y)
     return X, y
 
-# def PCA(X, n_component):
-#     C = np.cov(X.T)
-#     eig_val_cov, eig_vec_cov = np.linalg.eig(C)
-#     eig_pairs = [(np.abs(eig_val_cov[i]), eig_vec_cov[:,i]) for i in range(len(eig_val_cov))]
-#     eig_pairs.sort(key=lambda x: x[0], reverse=True)
-#     eig_vec = [p[1] for p in eig_pairs] ## sorted eigen_vec
-#     V = np.stack(eig_vec,axis=1)
-#     w = X.dot(V[:n_component].T)
-#     return w
+
+def PCA(X, n_component):
+    C = np.cov(X.T)
+    eig_val_cov, eig_vec_cov = np.linalg.eig(C)
+    eig_pairs = [(np.abs(eig_val_cov[i]), eig_vec_cov[:,i]) for i in range(len(eig_val_cov))]
+    eig_pairs.sort(key=lambda x: x[0], reverse=True)
+    eig_vec = [p[1] for p in eig_pairs] ## sorted eigen_vec
+    V = np.stack(eig_vec,axis=1)
+    w = X.dot(V[:n_component].T)
+    return w
 
 
 def evaluate(models):
     X,y = init()
-    test_data = np.load("Test_X.npy")
-    #pca = PCA(n_components=15)
-    #X = pca.fit_transform(X)
-   
-    acc_scorer = make_scorer(accuracy_score)
-    yps = []
+
     kf = KFold(n_splits=10)
     for model in models:
         acc_avg = []
@@ -50,47 +37,32 @@ def evaluate(models):
         for train_index, test_index in kf.split(X):
             X_train, X_valid = X[train_index], X[test_index]
             y_train, y_valid = y[train_index], y[test_index]
-            model.fit(X_train, y_train)
-
+            model.fit(X_train, y_train.reshape((-1,)))
             yp_valid = model.predict(X_valid)
             precision, recall, f1, _ = precision_recall_fscore_support(y_valid, yp_valid)
             acc = accuracy_score(y_valid, yp_valid)
-            print("acc",acc)
+            print(confusion_matrix(y_valid, yp_valid))
             acc_avg.append(acc)
             f1_0_avg.append(f1[0])
             f1_1_avg.append(f1[1])
-            break
-        
-        # print("accuracy mean",np.mean(np.array(acc_avg)))
-
-        model.fit(X,y)
-       
-        yp = model.predict(test_data)
-        # with open('MultinomialNB.csv', 'w') as f:
-        #     writer = csv.writer(f)
-        #     writer.writerow(('Id', 'Category'))
-        #     for i in range(len(yp)):
-        #         writer.writerow((i, yp[i]))
-        yps.append(yp)
-   
 
 
-if __name__ == "__main__":
-    # from sklearn.linear_model import LogisticRegression as LR
-    # clf = [NaiveBayes2(smoothing=1), MultinomialNB(alpha=1), LR()]
-    # clf = [ID3()]
-    # clf = [LogisticRegression()]
-    # evaluate(clf)
-    # process_test_set()
-    #clf = [ID3()]
-    # evaluate(clf)
-    test_data = np.load("Test_X.npy")
-    X,y = init()
-    estimator = ID3()
-    estimator.fit(X,y)
-    yp=estimator.predict(test_data)
-    with open('ID3.csv', 'w') as f:
+def predict_on_testset(model, X, y, filename):
+    model.fit(X, y.reshape((-1,)))
+    test_data = np.load("Manual_test_X.npy")
+    yp = model.predict(test_data)
+    with open(filename, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(('Id', 'Category'))
         for i in range(len(yp)):
             writer.writerow((i, yp[i]))
+   
+
+if __name__ == "__main__":
+    X, y = init()
+    # Import estimators from subfolders "linear" or "nonlinear",
+    # construct instances and put them into the "clf" list.
+    clf = [NaiveBayes2(smoothing=1)]
+    # To test cross-validation scores, run evaluate(clf)
+    # which will print the precision for each fold and     evaluate(clf)
+
